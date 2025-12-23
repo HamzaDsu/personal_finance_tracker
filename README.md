@@ -1,18 +1,19 @@
 # Personal Finance Tracker (Flutter)
 
 A lightweight, offline-first personal finance tracker built with Flutter.
-The app allows users to track income and expenses, view balances, edit/delete transactions, filter data, and persist everything locally with a clean, testable architecture.
+The app allows users to track income and expenses, view balances, edit/delete transactions, filter data, visualize spending, and persist everything locally with a clean, testable architecture.
 
 ## Features
 - Add income & expense transactions
-- Edit/update existing transactions
+- Edit/update existing transactions (tap a transaction to edit)
 - Delete transactions (swipe-to-delete with confirmation)
 - View current balance, total income & total expense
 - Filter transactions (All / Income / Expense)
+- Spending by Category chart (pie chart) with legend
 - Local persistence using Hive
 - Light/Dark theme toggle with persistence (SharedPreferences)
 - Structured error handling using exceptions & failures
-- Unit-tested business logic (Bloc tests)
+- Unit-tested business logic (TransactionBloc tests)
 
 ## Architecture
 This project follows a feature-first, clean architecture–inspired structure with clear separation of responsibilities.
@@ -26,7 +27,7 @@ This project follows a feature-first, clean architecture–inspired structure wi
 - Domain
   - Entities
   - Repository contracts
-  - Use cases (Add, Update, Delete, Load transactions)
+  - Use cases (Load, Add, Update, Delete transactions)
 
 - Data
   - Repository implementations
@@ -82,6 +83,11 @@ The app uses a structured error architecture:
 
 This prevents raw exceptions from leaking into the UI and keeps error handling consistent and testable.
 
+## Charts
+- Spending by Category is computed from expense transactions only.
+- Categories are aggregated in a small utility function and visualized with a pie chart.
+- The pie chart uses a simple color palette derived from category names to keep colors consistent.
+
 ## Testing
 ### Unit Tests Implemented
 - TransactionBloc unit tests using:
@@ -103,9 +109,11 @@ Tests are fast, deterministic, and do not depend on Hive.
 - Hive chosen for offline-first local persistence with minimal boilerplate
 - Manual dependency wiring used instead of a DI framework to keep the code easy to read
 - Bloc chosen to demonstrate scalable state management and enable robust testing
+- Chart logic is derived from existing Bloc state (no extra state management needed)
 
 ## Improvements (If More Time)
-- Category analytics & charts
+- Date range filtering
+- Category analytics (top categories, trends) and additional chart types (bar/line)
 - CSV export/import
 - Undo delete functionality
 - Cloud sync and authentication

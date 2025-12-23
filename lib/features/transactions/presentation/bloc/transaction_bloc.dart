@@ -19,16 +19,18 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     required AddTransaction addTransaction,
     required UpdateTransaction updateTransaction,
     required DeleteTransaction deleteTransaction,
-  })  : _getTransactions = getTransactions,
-        _addTransaction = addTransaction,
-        _updateTransaction = updateTransaction,
-        _deleteTransaction = deleteTransaction,
-        super(const TransactionState.initial()) {
+  }) : _getTransactions = getTransactions,
+       _addTransaction = addTransaction,
+       _updateTransaction = updateTransaction,
+       _deleteTransaction = deleteTransaction,
+       super(const TransactionState.initial()) {
     on<LoadTransactions>(_onLoadTransactions);
     on<AddTransactionRequested>(_onAddTransactionRequested);
     on<UpdateTransactionRequested>(_onUpdateTransactionRequested);
     on<DeleteTransactionRequested>(_onDeleteTransactionRequested);
     on<ChangeTransactionFilter>(_onChangeFilter);
+    on<SetDateRange>(_onSetDateRange);
+    on<ClearDateRange>(_onClearDateRange);
   }
 
   String _messageFromError(Object e) {
@@ -37,76 +39,107 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
   }
 
   Future<void> _onLoadTransactions(
-      LoadTransactions event,
-      Emitter<TransactionState> emit,
-      ) async {
+    LoadTransactions event,
+    Emitter<TransactionState> emit,
+  ) async {
     emit(state.copyWith(status: TransactionStatus.loading, errorMessage: null));
     try {
       final tx = await _getTransactions();
       emit(state.copyWith(status: TransactionStatus.success, transactions: tx));
     } catch (e) {
-      emit(state.copyWith(
-        status: TransactionStatus.failure,
-        errorMessage: _messageFromError(e),
-      ));
+      emit(
+        state.copyWith(
+          status: TransactionStatus.failure,
+          errorMessage: _messageFromError(e),
+        ),
+      );
     }
   }
 
   Future<void> _onAddTransactionRequested(
-      AddTransactionRequested event,
-      Emitter<TransactionState> emit,
-      ) async {
+    AddTransactionRequested event,
+    Emitter<TransactionState> emit,
+  ) async {
     emit(state.copyWith(status: TransactionStatus.loading, errorMessage: null));
     try {
       await _addTransaction(event.transaction);
       final updated = await _getTransactions();
-      emit(state.copyWith(status: TransactionStatus.success, transactions: updated));
+      emit(
+        state.copyWith(
+          status: TransactionStatus.success,
+          transactions: updated,
+        ),
+      );
     } catch (e) {
-      emit(state.copyWith(
-        status: TransactionStatus.failure,
-        errorMessage: _messageFromError(e),
-      ));
+      emit(
+        state.copyWith(
+          status: TransactionStatus.failure,
+          errorMessage: _messageFromError(e),
+        ),
+      );
     }
   }
 
   Future<void> _onUpdateTransactionRequested(
-      UpdateTransactionRequested event,
-      Emitter<TransactionState> emit,
-      ) async {
+    UpdateTransactionRequested event,
+    Emitter<TransactionState> emit,
+  ) async {
     emit(state.copyWith(status: TransactionStatus.loading, errorMessage: null));
     try {
       await _updateTransaction(event.transaction);
       final updated = await _getTransactions();
-      emit(state.copyWith(status: TransactionStatus.success, transactions: updated));
+      emit(
+        state.copyWith(
+          status: TransactionStatus.success,
+          transactions: updated,
+        ),
+      );
     } catch (e) {
-      emit(state.copyWith(
-        status: TransactionStatus.failure,
-        errorMessage: _messageFromError(e),
-      ));
+      emit(
+        state.copyWith(
+          status: TransactionStatus.failure,
+          errorMessage: _messageFromError(e),
+        ),
+      );
     }
   }
 
   Future<void> _onDeleteTransactionRequested(
-      DeleteTransactionRequested event,
-      Emitter<TransactionState> emit,
-      ) async {
+    DeleteTransactionRequested event,
+    Emitter<TransactionState> emit,
+  ) async {
     emit(state.copyWith(status: TransactionStatus.loading, errorMessage: null));
     try {
       await _deleteTransaction(event.id);
       final updated = await _getTransactions();
-      emit(state.copyWith(status: TransactionStatus.success, transactions: updated));
+      emit(
+        state.copyWith(
+          status: TransactionStatus.success,
+          transactions: updated,
+        ),
+      );
     } catch (e) {
-      emit(state.copyWith(
-        status: TransactionStatus.failure,
-        errorMessage: _messageFromError(e),
-      ));
+      emit(
+        state.copyWith(
+          status: TransactionStatus.failure,
+          errorMessage: _messageFromError(e),
+        ),
+      );
     }
   }
 
   void _onChangeFilter(
-      ChangeTransactionFilter event,
-      Emitter<TransactionState> emit,
-      ) {
+    ChangeTransactionFilter event,
+    Emitter<TransactionState> emit,
+  ) {
     emit(state.copyWith(filter: event.filter));
+  }
+
+  void _onSetDateRange(SetDateRange event, Emitter<TransactionState> emit) {
+    emit(state.copyWith(dateRange: event.range));
+  }
+
+  void _onClearDateRange(ClearDateRange event, Emitter<TransactionState> emit) {
+    emit(state.copyWith(clearDateRange: true));
   }
 }
