@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/utils/date_range.dart';
 import '../../domain/entities/transaction_entity.dart';
 import 'transaction_filter.dart';
 
@@ -48,4 +49,17 @@ class ChangeTransactionFilter extends TransactionEvent {
 
   @override
   List<Object?> get props => [filter];
+}
+
+class SetDateRange extends TransactionEvent {
+  final DateRange range;
+
+  const SetDateRange(this.range);
+
+  @override
+  List<Object?> get props => [range];
+}
+
+class ClearDateRange extends TransactionEvent {
+  const ClearDateRange();
 }
