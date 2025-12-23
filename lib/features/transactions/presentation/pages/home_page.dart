@@ -3,10 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../app/theme/theme_cubit.dart';
 import '../../../../app/theme/theme_state.dart';
+import '../../../../core/utils/category_aggregator.dart';
 import '../bloc/transaction_bloc.dart';
 import '../bloc/transaction_event.dart';
 import '../bloc/transaction_state.dart';
 import '../widgets/balance_header.dart';
+import '../widgets/category_legend.dart';
+import '../widgets/category_pie_chart.dart';
 import '../widgets/filter_chips.dart';
 import '../widgets/transaction_list.dart';
 import 'add_transaction_page.dart';
@@ -27,6 +30,12 @@ class HomePage extends StatelessWidget {
                 onPressed: () => context.read<ThemeCubit>().toggleTheme(),
                 icon: Icon(themeState.isDark ? Icons.light_mode : Icons.dark_mode),
               ),
+              IconButton(
+                tooltip: 'Reload',
+                onPressed: () =>
+                    context.read<TransactionBloc>().add(const LoadTransactions()),
+                icon: const Icon(Icons.refresh),
+              ),
             ],
           ),
           body: BlocConsumer<TransactionBloc, TransactionState>(
@@ -44,6 +53,8 @@ class HomePage extends StatelessWidget {
                 return const Center(child: CircularProgressIndicator());
               }
 
+              final expenseData = expenseByCategory(state.transactions);
+
               return Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -54,14 +65,33 @@ class HomePage extends StatelessWidget {
                       income: state.totalIncome,
                       expense: state.totalExpense,
                     ),
+
                     const SizedBox(height: 12),
+
                     FilterChips(
                       current: state.filter,
                       onChanged: (f) => context
                           .read<TransactionBloc>()
                           .add(ChangeTransactionFilter(f)),
                     ),
+
+                    if (expenseData.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        'Spending by Category',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 200,
+                        child: CategoryPieChart(data: expenseData),
+                      ),
+                      const SizedBox(height: 8),
+                      CategoryLegend(data: expenseData),
+                    ],
+
                     const SizedBox(height: 12),
+
                     Expanded(
                       child: TransactionList(
                         transactions: state.visibleTransactions,

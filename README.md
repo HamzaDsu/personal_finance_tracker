@@ -1,50 +1,129 @@
 # Personal Finance Tracker (Flutter)
 
-A lightweight personal finance tracker that supports adding income/expense transactions, viewing balance, filtering, and persisting data locally.
+A lightweight, offline-first personal finance tracker built with Flutter.
+The app allows users to track income and expenses, view balances, edit/delete transactions, filter data, visualize spending, and persist everything locally with a clean, testable architecture.
 
 ## Features
-- Add transactions (amount, type, category, date, notes)
-- View current balance (income - expense)
+- Add income & expense transactions
+- Edit/update existing transactions (tap a transaction to edit)
+- Delete transactions (swipe-to-delete with confirmation)
+- View current balance, total income & total expense
 - Filter transactions (All / Income / Expense)
-- Local persistence (Hive) for transactions
-- Theme toggle (Light/Dark) with persistence (SharedPreferences)
+- Spending by Category chart (pie chart) with legend
+- Local persistence using Hive
+- Light/Dark theme toggle with persistence (SharedPreferences)
+- Structured error handling using exceptions & failures
+- Unit-tested business logic (TransactionBloc tests)
 
 ## Architecture
-This project follows a feature-first structure with clear separation of concerns:
+This project follows a feature-first, clean architecture–inspired structure with clear separation of responsibilities.
 
-- **Presentation**: UI widgets + BLoC for state management (`flutter_bloc`)
-- **Domain**: entities, repository contracts, and use cases
-- **Data**: repository implementations and local data sources (Hive)
+### Layers
+- Presentation
+  - UI widgets
+  - Pages
+  - BLoC / Cubit for state management (flutter_bloc)
 
-Data flow:
+- Domain
+  - Entities
+  - Repository contracts
+  - Use cases (Load, Add, Update, Delete transactions)
+
+- Data
+  - Repository implementations
+  - Local data source (Hive)
+  - Data models
+
+### Data Flow
 UI → Bloc → Use Case → Repository → Local Data Source (Hive)
 
 ## State Management
-- `ThemeCubit` manages theme mode and persists preference using SharedPreferences.
-- `TransactionBloc` manages:
-    - loading transactions from local storage
-    - adding transactions
-    - filtering (All/Income/Expense)
-    - computed values (income, expense, balance)
+### Theme
+- ThemeCubit manages theme mode
+- Persists theme preference using SharedPreferences
+- Supports Light & Dark themes
+
+### Transactions
+- TransactionBloc manages:
+  - Loading transactions
+  - Adding new transactions
+  - Updating existing transactions
+  - Deleting transactions
+  - Filtering (All / Income / Expense)
+  - Derived values:
+    - Total income
+    - Total expense
+    - Balance
 
 ## Persistence
-- **Transactions**: Hive box (`transactions`) keyed by transaction id.
-- **Theme**: SharedPreferences key (`theme_mode`).
+- Transactions
+  - Stored in Hive box: transactions
+  - Keyed by transaction id
+  - Uses upsert for add/update operations
+
+- Theme
+  - Stored using SharedPreferences
+  - Key: theme_mode
+
+## Error Handling
+The app uses a structured error architecture:
+
+### Data Layer
+- Throws typed exceptions:
+  - StorageException
+
+### Domain / Repository Layer
+- Converts exceptions into failures:
+  - StorageFailure
+  - UnknownFailure
+
+### Presentation Layer
+- Bloc emits failure states with user-friendly messages
+- UI reacts using SnackBars
+
+This prevents raw exceptions from leaking into the UI and keeps error handling consistent and testable.
+
+## Charts
+- Spending by Category is computed from expense transactions only.
+- Categories are aggregated in a small utility function and visualized with a pie chart.
+- The pie chart uses a simple color palette derived from category names to keep colors consistent.
+
+## Testing
+### Unit Tests Implemented
+- TransactionBloc unit tests using:
+  - bloc_test
+  - mocktail
+
+### Covered Scenarios
+- Load transactions (success & failure)
+- Add transaction
+- Update transaction
+- Delete transaction
+- Change filter
+- Balance calculation logic
+
+Tests are fast, deterministic, and do not depend on Hive.
 
 ## Tradeoffs & Decisions
-- Categories are kept as a simple predefined list for speed and clarity (can be made user-configurable).
-- Hive chosen for local storage due to simplicity and fast setup for a take-home assignment.
-- Minimal manual dependency wiring (no DI framework) to keep the sample easy to read.
+- Categories are predefined for simplicity and clarity (can be made user-configurable)
+- Hive chosen for offline-first local persistence with minimal boilerplate
+- Manual dependency wiring used instead of a DI framework to keep the code easy to read
+- Bloc chosen to demonstrate scalable state management and enable robust testing
+- Chart logic is derived from existing Bloc state (no extra state management needed)
 
-## Improvements (if more time)
-- Edit/Delete transactions (delete is quick, edit requires UI work)
+## Improvements (If More Time)
 - Date range filtering
-- Category analytics / charts (e.g., spend per category)
-- Export/import (CSV)
-- Unit tests for repository and bloc + golden UI tests
+- Category analytics (top categories, trends) and additional chart types (bar/line)
+- CSV export/import
+- Undo delete functionality
+- Cloud sync and authentication
 
 ## Getting Started
-```bash
 flutter pub get
 flutter pub run build_runner build --delete-conflicting-outputs
 flutter run
+
+## Notes
+- The project was developed incrementally, step by step
+- Each feature was implemented end-to-end (UI → Bloc → Domain → Data)
+- Focus was placed on clean architecture, testability, and maintainability
