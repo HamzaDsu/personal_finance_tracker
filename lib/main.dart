@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'app/app.dart';
+import 'core/constants/app_strings.dart';
 import 'features/transactions/data/models/transaction_model.dart';
 
 Future<void> main() async {
@@ -11,7 +12,7 @@ Future<void> main() async {
   Hive.registerAdapter(TransactionModelAdapter());
 
   // One box for all transactions
-  await Hive.openBox<TransactionModel>('transactions');
+  await Hive.openBox<TransactionModel>(AppStrings.transactionsDataSource);
 
   runApp(const FinanceApp());
 }

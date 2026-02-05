@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personal_finance_tracker/core/constants/app_strings.dart';
 
 import '../../../../core/utils/formatters.dart';
 
@@ -28,7 +29,7 @@ class BalanceHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Balance', style: theme.textTheme.titleMedium),
+          Text(AppStrings.balance, style: theme.textTheme.titleMedium),
           const SizedBox(height: 6),
           Text(
             Formatters.money(balance),
@@ -39,7 +40,7 @@ class BalanceHeader extends StatelessWidget {
             children: [
               Expanded(
                 child: _MiniStat(
-                  label: 'Income',
+                  label: AppStrings.income,
                   value: Formatters.money(income),
                   icon: Icons.arrow_downward,
                 ),
@@ -47,7 +48,7 @@ class BalanceHeader extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _MiniStat(
-                  label: 'Expense',
+                  label: AppStrings.expense,
                   value: Formatters.money(expense),
                   icon: Icons.arrow_upward,
                 ),

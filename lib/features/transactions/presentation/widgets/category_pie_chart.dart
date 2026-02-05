@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:personal_finance_tracker/core/constants/app_strings.dart';
 import 'package:personal_finance_tracker/core/ui/category_colors.dart';
 
 class CategoryPieChart extends StatelessWidget {
@@ -13,7 +14,7 @@ class CategoryPieChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (data.isEmpty) {
-      return const Center(child: Text('No expense data to display'));
+      return const Center(child: Text(AppStrings.noExpense));
     }
 
     final total = data.values.fold<double>(0, (a, b) => a + b);

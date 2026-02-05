@@ -30,7 +30,7 @@ void main() {
     String id = 't1',
     TransactionType type = TransactionType.expense,
     double amount = 10,
-    String category = 'Food',
+    TransactionCategory category = TransactionCategory.food,
     DateTime? date,
     String? notes,
   }) {
@@ -51,7 +51,7 @@ void main() {
         id: 'fallback',
         type: TransactionType.expense,
         amount: 1,
-        category: 'General',
+        category: TransactionCategory.general,
         date: DateTime(2025, 1, 1),
         notes: null,
       ),
@@ -84,16 +84,30 @@ void main() {
     blocTest<TransactionBloc, TransactionState>(
       'emits [loading, success] with transactions when LoadTransactions succeeds',
       build: () {
-        when(() => mockGetTransactions()).thenAnswer((_) async => [
-          tx(id: '1', type: TransactionType.income, amount: 100, category: 'Salary'),
-          tx(id: '2', type: TransactionType.expense, amount: 30, category: 'Food'),
-        ]);
+        when(() => mockGetTransactions()).thenAnswer(
+          (_) async => [
+            tx(
+              id: '1',
+              type: TransactionType.income,
+              amount: 100,
+              category: TransactionCategory.salary,
+            ),
+            tx(
+              id: '2',
+              type: TransactionType.expense,
+              amount: 30,
+              category: TransactionCategory.food,
+            ),
+          ],
+        );
         return buildBloc();
       },
       act: (bloc) => bloc.add(const LoadTransactions()),
       expect: () => [
-        const TransactionState.initial()
-            .copyWith(status: TransactionStatus.loading, errorMessage: null),
+        const TransactionState.initial().copyWith(
+          status: TransactionStatus.loading,
+          errorMessage: null,
+        ),
         predicate<TransactionState>((s) {
           return s.status == TransactionStatus.success &&
               s.transactions.length == 2 &&
@@ -113,11 +127,15 @@ void main() {
       },
       act: (bloc) => bloc.add(const LoadTransactions()),
       expect: () => [
-        const TransactionState.initial()
-            .copyWith(status: TransactionStatus.loading, errorMessage: null),
-        predicate<TransactionState>((s) =>
-        s.status == TransactionStatus.failure &&
-            (s.errorMessage ?? '').isNotEmpty),
+        const TransactionState.initial().copyWith(
+          status: TransactionStatus.loading,
+          errorMessage: null,
+        ),
+        predicate<TransactionState>(
+          (s) =>
+              s.status == TransactionStatus.failure &&
+              (s.errorMessage ?? '').isNotEmpty,
+        ),
       ],
     );
 
@@ -125,21 +143,39 @@ void main() {
       'AddTransactionRequested: emits loading then success and reloads list',
       build: () {
         when(() => mockAddTransaction(any())).thenAnswer((_) async {});
-        when(() => mockGetTransactions()).thenAnswer((_) async => [
-          tx(id: '1', type: TransactionType.expense, amount: 20, category: 'Food'),
-        ]);
+        when(() => mockGetTransactions()).thenAnswer(
+          (_) async => [
+            tx(
+              id: '1',
+              type: TransactionType.expense,
+              amount: 20,
+              category: TransactionCategory.food,
+            ),
+          ],
+        );
         return buildBloc();
       },
-      act: (bloc) => bloc.add(AddTransactionRequested(
-        tx(id: 'new', type: TransactionType.expense, amount: 20, category: 'Food'),
-      )),
+      act: (bloc) => bloc.add(
+        AddTransactionRequested(
+          tx(
+            id: 'new',
+            type: TransactionType.expense,
+            amount: 20,
+            category: TransactionCategory.food,
+          ),
+        ),
+      ),
       expect: () => [
-        const TransactionState.initial()
-            .copyWith(status: TransactionStatus.loading, errorMessage: null),
-        predicate<TransactionState>((s) =>
-        s.status == TransactionStatus.success &&
-            s.transactions.length == 1 &&
-            s.totalExpense == 20),
+        const TransactionState.initial().copyWith(
+          status: TransactionStatus.loading,
+          errorMessage: null,
+        ),
+        predicate<TransactionState>(
+          (s) =>
+              s.status == TransactionStatus.success &&
+              s.transactions.length == 1 &&
+              s.totalExpense == 20,
+        ),
       ],
       verify: (_) {
         verify(() => mockAddTransaction(any())).called(1);
@@ -151,20 +187,38 @@ void main() {
       'UpdateTransactionRequested: emits loading then success and reloads list',
       build: () {
         when(() => mockUpdateTransaction(any())).thenAnswer((_) async {});
-        when(() => mockGetTransactions()).thenAnswer((_) async => [
-          tx(id: '1', type: TransactionType.expense, amount: 99, category: 'Bills'),
-        ]);
+        when(() => mockGetTransactions()).thenAnswer(
+          (_) async => [
+            tx(
+              id: '1',
+              type: TransactionType.expense,
+              amount: 99,
+              category: TransactionCategory.bills,
+            ),
+          ],
+        );
         return buildBloc();
       },
-      act: (bloc) => bloc.add(UpdateTransactionRequested(
-        tx(id: '1', type: TransactionType.expense, amount: 99, category: 'Bills'),
-      )),
+      act: (bloc) => bloc.add(
+        UpdateTransactionRequested(
+          tx(
+            id: '1',
+            type: TransactionType.expense,
+            amount: 99,
+            category: TransactionCategory.bills,
+          ),
+        ),
+      ),
       expect: () => [
-        const TransactionState.initial()
-            .copyWith(status: TransactionStatus.loading, errorMessage: null),
-        predicate<TransactionState>((s) =>
-        s.status == TransactionStatus.success &&
-            s.transactions.single.amount == 99),
+        const TransactionState.initial().copyWith(
+          status: TransactionStatus.loading,
+          errorMessage: null,
+        ),
+        predicate<TransactionState>(
+          (s) =>
+              s.status == TransactionStatus.success &&
+              s.transactions.single.amount == 99,
+        ),
       ],
       verify: (_) {
         verify(() => mockUpdateTransaction(any())).called(1);
@@ -181,10 +235,14 @@ void main() {
       },
       act: (bloc) => bloc.add(const DeleteTransactionRequested('1')),
       expect: () => [
-        const TransactionState.initial()
-            .copyWith(status: TransactionStatus.loading, errorMessage: null),
-        predicate<TransactionState>((s) =>
-        s.status == TransactionStatus.success && s.transactions.isEmpty),
+        const TransactionState.initial().copyWith(
+          status: TransactionStatus.loading,
+          errorMessage: null,
+        ),
+        predicate<TransactionState>(
+          (s) =>
+              s.status == TransactionStatus.success && s.transactions.isEmpty,
+        ),
       ],
       verify: (_) {
         verify(() => mockDeleteTransaction('1')).called(1);
@@ -195,9 +253,12 @@ void main() {
     blocTest<TransactionBloc, TransactionState>(
       'ChangeTransactionFilter updates filter without touching data',
       build: () => buildBloc(),
-      act: (bloc) => bloc.add(const ChangeTransactionFilter(TransactionFilter.income)),
+      act: (bloc) =>
+          bloc.add(const ChangeTransactionFilter(TransactionFilter.income)),
       expect: () => [
-        const TransactionState.initial().copyWith(filter: TransactionFilter.income),
+        const TransactionState.initial().copyWith(
+          filter: TransactionFilter.income,
+        ),
       ],
     );
   });

@@ -1,10 +1,11 @@
 import 'package:hive/hive.dart';
+import 'package:personal_finance_tracker/core/constants/app_strings.dart';
 
 import '../../../../core/errors/exceptions.dart';
 import '../models/transaction_model.dart';
 
 class TransactionLocalDataSource {
-  static const String _boxName = 'transactions';
+  static const String _boxName = AppStrings.transactionsDataSource;
 
   Box<TransactionModel> get _box => Hive.box<TransactionModel>(_boxName);
 
@@ -14,7 +15,7 @@ class TransactionLocalDataSource {
       values.sort((a, b) => b.date.compareTo(a.date)); // newest first
       return values;
     } catch (_) {
-      throw const StorageException('Failed to read transactions');
+      throw const StorageException(AppStrings.failedReadTransactions);
     }
   }
 
@@ -22,7 +23,7 @@ class TransactionLocalDataSource {
     try {
       await _box.put(model.id, model); // put by id => update or insert
     } catch (_) {
-      throw const StorageException('Failed to save transaction');
+      throw const StorageException(AppStrings.failedSaveTransaction);
     }
   }
 
@@ -30,7 +31,7 @@ class TransactionLocalDataSource {
     try {
       await _box.delete(id);
     } catch (_) {
-      throw const StorageException('Failed to delete transaction');
+      throw const StorageException(AppStrings.failedDeleteTransaction);
     }
   }
 
