@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:personal_finance_tracker/core/constants/app_strings.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../../core/utils/formatters.dart';
@@ -24,22 +25,10 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
   final _notesCtrl = TextEditingController();
 
   TransactionType _type = TransactionType.expense;
-  String _category = 'General';
+  TransactionCategory _category = TransactionCategory.general;
   DateTime _date = DateTime.now();
 
   bool _saving = false;
-
-  static const _categories = <String>[
-    'General',
-    'Food',
-    'Transport',
-    'Shopping',
-    'Bills',
-    'Health',
-    'Entertainment',
-    'Salary',
-    'Freelance',
-  ];
 
   bool get _isEdit => widget.initial != null;
 
@@ -73,7 +62,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
       lastDate: DateTime(now.year + 5),
     );
 
-    if (picked != null) {
+    if (picked != null && mounted) {
       setState(() => _date = picked);
     }
   }
@@ -119,22 +108,26 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
 
         if (state.status == TransactionStatus.success) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(_isEdit ? 'Transaction updated ✅' : 'Transaction saved ✅')),
+            SnackBar(
+              content: Text(
+                _isEdit ? AppStrings.updatedTransaction : AppStrings.savedTransaction,
+              ),
+            ),
           );
           Navigator.of(context).pop();
         }
 
         if (state.status == TransactionStatus.failure) {
           setState(() => _saving = false);
-          final msg = state.errorMessage ?? 'Failed to save transaction';
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(msg)),
-          );
+          final msg = state.errorMessage ?? AppStrings.errorSaving;
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(msg)));
         }
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(_isEdit ? 'Edit Transaction' : 'Add Transaction'),
+          title: Text(_isEdit ? AppStrings.editTransaction : AppStrings.addTransaction),
           actions: [
             if (_saving)
               const Padding(
@@ -160,17 +153,18 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                   children: [
                     TextFormField(
                       controller: _amountCtrl,
-                      keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       decoration: const InputDecoration(
-                        labelText: 'Amount',
-                        hintText: 'e.g. 49.99',
+                        labelText: AppStrings.amount,
+                        hintText: AppStrings.amountHint,
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
                         final amt = _parseAmount(value ?? '');
-                        if (amt == null) return 'Amount is required';
-                        if (amt <= 0) return 'Amount must be greater than 0';
+                        if (amt == null) return AppStrings.amountRequired;
+                        if (amt <= 0) return AppStrings.amountGreaterThanZero;
                         return null;
                       },
                     ),
@@ -178,7 +172,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
 
                     InputDecorator(
                       decoration: const InputDecoration(
-                        labelText: 'Type',
+                        labelText: AppStrings.type,
                         border: OutlineInputBorder(),
                       ),
                       child: Row(
@@ -186,7 +180,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                           Expanded(
                             child: RadioListTile<TransactionType>(
                               contentPadding: EdgeInsets.zero,
-                              title: const Text('Expense'),
+                              title: const Text(AppStrings.expense),
                               value: TransactionType.expense,
                               groupValue: _type,
                               onChanged: (v) => setState(() => _type = v!),
@@ -195,7 +189,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                           Expanded(
                             child: RadioListTile<TransactionType>(
                               contentPadding: EdgeInsets.zero,
-                              title: const Text('Income'),
+                              title: const Text(AppStrings.income),
                               value: TransactionType.income,
                               groupValue: _type,
                               onChanged: (v) => setState(() => _type = v!),
@@ -206,17 +200,21 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                     ),
                     const SizedBox(height: 12),
 
-                    DropdownButtonFormField<String>(
-                      value: _categories.contains(_category) ? _category : 'General',
+                    DropdownButtonFormField<TransactionCategory>(
+                      value: _category,
                       decoration: const InputDecoration(
-                        labelText: 'Category',
+                        labelText: AppStrings.category,
                         border: OutlineInputBorder(),
                       ),
-                      items: _categories
-                          .map((c) =>
-                          DropdownMenuItem(value: c, child: Text(c)))
+                      items: TransactionCategory.values
+                          .map(
+                            (cat) => DropdownMenuItem(
+                              value: cat,
+                              child: Text(cat.displayName),
+                            ),
+                          )
                           .toList(),
-                      onChanged: (v) => setState(() => _category = v ?? _category),
+                      onChanged: (v) => setState(() => _category = v!),
                     ),
                     const SizedBox(height: 12),
 
@@ -224,7 +222,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                       onTap: _pickDate,
                       child: InputDecorator(
                         decoration: const InputDecoration(
-                          labelText: 'Date',
+                          labelText: AppStrings.date,
                           border: OutlineInputBorder(),
                         ),
                         child: Row(
@@ -232,7 +230,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                             const Icon(Icons.calendar_today, size: 18),
                             const SizedBox(width: 8),
                             Expanded(child: Text(Formatters.date(_date))),
-                            const Text('Pick'),
+                            const Text(AppStrings.pick),
                           ],
                         ),
                       ),
@@ -243,7 +241,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                       controller: _notesCtrl,
                       maxLines: 3,
                       decoration: const InputDecoration(
-                        labelText: 'Notes (optional)',
+                        labelText: AppStrings.notes,
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -253,14 +251,18 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                       onPressed: _saving ? null : _submit,
                       icon: _saving
                           ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
                           : const Icon(Icons.check),
-                      label: Text(_saving
-                          ? 'Saving...'
-                          : (_isEdit ? 'Update Transaction' : 'Add Transaction')),
+                      label: Text(
+                        _saving
+                            ? AppStrings.saving
+                            : (_isEdit
+                                  ? AppStrings.updatedTransaction
+                                  : AppStrings.addTransaction),
+                      ),
                     ),
                   ],
                 ),

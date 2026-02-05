@@ -2,7 +2,6 @@ import 'package:hive/hive.dart';
 
 import '../../domain/entities/transaction_entity.dart';
 
-
 part 'transaction_model.g.dart';
 
 @HiveType(typeId: 1)
@@ -39,7 +38,10 @@ class TransactionModel extends HiveObject {
       id: id,
       type: type == 0 ? TransactionType.income : TransactionType.expense,
       amount: amount,
-      category: category,
+      category: TransactionCategory.values.firstWhere(
+        (e) => e.name == category,
+        orElse: () => TransactionCategory.general,
+      ),
       date: date,
       notes: notes,
     );
@@ -50,7 +52,7 @@ class TransactionModel extends HiveObject {
       id: e.id,
       type: e.type == TransactionType.income ? 0 : 1,
       amount: e.amount,
-      category: e.category,
+      category: e.category.name,
       date: e.date,
       notes: e.notes,
     );

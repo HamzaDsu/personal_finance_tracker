@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../app/theme/theme_cubit.dart';
 import '../../../../app/theme/theme_state.dart';
+import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/category_aggregator.dart';
 import '../../../../core/utils/date_range.dart';
 import '../../../../core/utils/formatters.dart';
@@ -33,9 +34,11 @@ class HomePage extends StatelessWidget {
   }
 
   Future<void> _pickCustomRange(
-    BuildContext context,
-    TransactionState state,
-  ) async {
+      BuildContext context,
+      TransactionState state,
+      ) async {
+    final transactionBloc = context.read<TransactionBloc>();
+
     final picked = await showDateRangePicker(
       context: context,
       firstDate: DateTime(DateTime.now().year - 5),
@@ -43,13 +46,13 @@ class HomePage extends StatelessWidget {
       initialDateRange: state.dateRange == null
           ? null
           : DateTimeRange(
-              start: state.dateRange!.start,
-              end: state.dateRange!.end,
-            ),
+        start: state.dateRange!.start,
+        end: state.dateRange!.end,
+      ),
     );
 
     if (picked != null) {
-      context.read<TransactionBloc>().add(
+      transactionBloc.add(
         SetDateRange(DateRange(start: picked.start, end: picked.end)),
       );
     }
@@ -61,12 +64,12 @@ class HomePage extends StatelessWidget {
       builder: (context, themeState) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Personal Finance Tracker'),
+            title: const Text(AppStrings.appName),
             actions: [
               IconButton(
                 tooltip: themeState.isDark
-                    ? 'Switch to Light'
-                    : 'Switch to Dark',
+                    ? AppStrings.switchLight
+                    : AppStrings.switchDark,
                 onPressed: () => context.read<ThemeCubit>().toggleTheme(),
                 icon: Icon(
                   themeState.isDark ? Icons.light_mode : Icons.dark_mode,
@@ -78,7 +81,7 @@ class HomePage extends StatelessWidget {
             listenWhen: (prev, curr) => prev.status != curr.status,
             listener: (context, state) {
               if (state.status == TransactionStatus.failure) {
-                final msg = state.errorMessage ?? 'Something went wrong';
+                final msg = state.errorMessage ?? AppStrings.somethingWrong;
                 ScaffoldMessenger.of(
                   context,
                 ).showSnackBar(SnackBar(content: Text(msg)));
@@ -119,7 +122,7 @@ class HomePage extends StatelessWidget {
                                 onPressed: () => context
                                     .read<TransactionBloc>()
                                     .add(SetDateRange(_thisMonth())),
-                                child: const Text('This Month'),
+                                child: const Text(AppStrings.monthRange),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -128,7 +131,7 @@ class HomePage extends StatelessWidget {
                                 onPressed: () => context
                                     .read<TransactionBloc>()
                                     .add(SetDateRange(_last30Days())),
-                                child: const Text('Last 30 Days'),
+                                child: const Text(AppStrings.daysRange),
                               ),
                             ),
                           ],
@@ -144,7 +147,7 @@ class HomePage extends StatelessWidget {
                                 icon: const Icon(Icons.date_range),
                                 label: Text(
                                   state.dateRange == null
-                                      ? 'Custom Range'
+                                      ? AppStrings.customRange
                                       : '${Formatters.date(state.dateRange!.start)} - ${Formatters.date(state.dateRange!.end)}',
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -153,7 +156,7 @@ class HomePage extends StatelessWidget {
                             const SizedBox(width: 8),
                             if (state.dateRange != null)
                               IconButton(
-                                tooltip: 'Clear date filter',
+                                tooltip: AppStrings.clearFilter,
                                 onPressed: () => context
                                     .read<TransactionBloc>()
                                     .add(const ClearDateRange()),
@@ -165,7 +168,7 @@ class HomePage extends StatelessWidget {
                         if (expenseData.isNotEmpty) ...[
                           const SizedBox(height: 16),
                           Text(
-                            'Spending by Category',
+                            AppStrings.spendingCategory,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                           const SizedBox(height: 12),
@@ -179,7 +182,7 @@ class HomePage extends StatelessWidget {
 
                         const SizedBox(height: 16),
                         Text(
-                          'Transactions',
+                          AppStrings.transactions,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 12),
@@ -204,20 +207,20 @@ class HomePage extends StatelessWidget {
                               return await showDialog<bool>(
                                     context: context,
                                     builder: (ctx) => AlertDialog(
-                                      title: const Text('Delete transaction?'),
+                                      title: const Text(AppStrings.deleteTitle),
                                       content: const Text(
-                                        'This action cannot be undone.',
+                                        AppStrings.deleteContent,
                                       ),
                                       actions: [
                                         TextButton(
                                           onPressed: () =>
                                               Navigator.of(ctx).pop(false),
-                                          child: const Text('Cancel'),
+                                          child: const Text(AppStrings.cancel),
                                         ),
                                         FilledButton(
                                           onPressed: () =>
                                               Navigator.of(ctx).pop(true),
-                                          child: const Text('Delete'),
+                                          child: const Text(AppStrings.delete),
                                         ),
                                       ],
                                     ),
@@ -231,7 +234,7 @@ class HomePage extends StatelessWidget {
 
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Transaction deleted'),
+                                  content: Text(AppStrings.deleteTransaction),
                                 ),
                               );
                             },
@@ -257,7 +260,7 @@ class HomePage extends StatelessWidget {
                                         : Icons.north_east,
                                   ),
                                 ),
-                                title: Text(tx.category),
+                                title: Text(tx.category.displayName),
                                 subtitle: Text(
                                   [
                                     Formatters.date(tx.date),

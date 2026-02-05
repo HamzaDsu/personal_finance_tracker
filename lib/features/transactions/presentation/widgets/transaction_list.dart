@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personal_finance_tracker/core/constants/app_strings.dart';
 
 import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/transaction_entity.dart';
@@ -35,16 +36,16 @@ class TransactionList extends StatelessWidget {
             return await showDialog<bool>(
               context: context,
               builder: (ctx) => AlertDialog(
-                title: const Text('Delete transaction?'),
-                content: const Text('This action cannot be undone.'),
+                title: const Text(AppStrings.deleteTitle),
+                content: const Text(AppStrings.deleteContent),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(false),
-                    child: const Text('Cancel'),
+                    child: const Text(AppStrings.cancel),
                   ),
                   FilledButton(
                     onPressed: () => Navigator.of(ctx).pop(true),
-                    child: const Text('Delete'),
+                    child: const Text(AppStrings.delete),
                   ),
                 ],
               ),
@@ -66,7 +67,7 @@ class TransactionList extends StatelessWidget {
               leading: CircleAvatar(
                 child: Icon(isIncome ? Icons.south_west : Icons.north_east),
               ),
-              title: Text(t.category),
+              title: Text(t.category.displayName),
               subtitle: Text(
                 [
                   Formatters.date(t.date),
@@ -107,13 +108,13 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'No transactions yet',
+              AppStrings.noTransactions,
               style: theme.textTheme.titleLarge,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              'Tap + to add your first income or expense.',
+              AppStrings.emptyStateSub,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),

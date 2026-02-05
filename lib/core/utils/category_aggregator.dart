@@ -7,7 +7,7 @@ Map<String, double> expenseByCategory(List<TransactionEntity> transactions) {
     if (tx.type != TransactionType.expense) continue;
 
     result.update(
-      tx.category,
+      tx.category.displayName,
           (value) => value + tx.amount,
       ifAbsent: () => tx.amount,
     );
